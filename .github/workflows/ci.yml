@@ -29,3 +29,28 @@ jobs:
           if-no-files-found: error
       - name: Build Docker image
         run: docker build -t heart-disease-mlops:${{ github.sha }} .
+      - name: Docker smoke test
+        run: |
+          docker run --detach --rm --name heart-disease-api -p 8000:8000 heart-disease-mlops:${{ github.sha }}
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:8000/health > docker-health.json; then
+              break
+            fi
+            sleep 2
+          done
+          test -s docker-health.json
+          curl --fail --silent --show-error \
+            --request POST http://127.0.0.1:8000/predict \
+            --header 'Content-Type: application/json' \
+            --data '{"age":63,"sex":1,"cp":3,"trestbps":145,"chol":233,"fbs":1,"restecg":0,"thalach":150,"exang":0,"oldpeak":2.3,"slope":0,"ca":0,"thal":1}' \
+            > docker-predict.json
+          cat docker-health.json
+          cat docker-predict.json
+      - name: Upload Docker smoke-test evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-smoke-test-evidence
+          path: |
+            docker-health.json
+            docker-predict.json
+          if-no-files-found: error

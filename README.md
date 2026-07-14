@@ -111,6 +111,8 @@ pytest -q
 
 ## Docker and monitoring
 
+The GitHub Actions pipeline builds the Docker image, starts it on the runner, verifies `/health`, and sends a real `/predict` request. The resulting JSON responses are retained as the `docker-smoke-test-evidence` workflow artifact.
+
 Build after training so the model is included:
 
 ```bash
