@@ -140,4 +140,4 @@ Set DNS for `heart-disease.local` to the ingress controller or replace that host
 
 ## Assignment evidence
 
-Use [screenshots/README.md](screenshots/README.md) to capture the required UI, MLflow, Docker, Kubernetes, and monitoring evidence. A ready-to-record two-to-three-minute demonstration is provided in [VIDEO_SCRIPT.md](VIDEO_SCRIPT.md). The implementation and validation checklist are in [report.md](report.md).
+The submission-ready report is available as [DOCX](Heart_Disease_MLOps_Assignment_Report.docx) and [Markdown source](FINAL_REPORT.md). Read [SUBMISSION_GUIDE.md](SUBMISSION_GUIDE.md) for the submission package and student-detail fields. Use [SUBMISSION_EVIDENCE_CHECKLIST.md](SUBMISSION_EVIDENCE_CHECKLIST.md) and [screenshots/README.md](screenshots/README.md) to capture the required authentic UI, MLflow, Docker, Kubernetes, CI, and monitoring evidence. A ready-to-record two-to-three-minute demonstration is provided in [VIDEO_SCRIPT.md](VIDEO_SCRIPT.md). The implementation summary is in [report.md](report.md).
