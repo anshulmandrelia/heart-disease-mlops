@@ -54,6 +54,8 @@ jobs:
             docker-health.json
             docker-predict.json
           if-no-files-found: error
+      - name: Stop Docker smoke-test container
+        run: docker stop heart-disease-api
       - name: Create local Kubernetes cluster
         uses: helm/kind-action@v1.12.0
         with:
@@ -92,6 +94,8 @@ jobs:
             kubernetes-predict.json
             kubectl-port-forward.log
           if-no-files-found: error
+      - name: Stop Kubernetes port-forward
+        run: pkill -f "kubectl port-forward" || true
       - name: Monitoring stack smoke test
         run: |
           docker compose -f docker/docker-compose.yml up --build --detach
