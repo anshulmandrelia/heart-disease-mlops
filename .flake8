@@ -1,0 +1,6 @@
+[flake8]
+max-line-length = 140
+extend-ignore = E203,W391,W503
+exclude = .venv,notebooks
+per-file-ignores =
+    src/evaluate.py:E402

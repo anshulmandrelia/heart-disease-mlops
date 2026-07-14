@@ -1,0 +1,19 @@
+{
+  "run_id":"f5d148b01686432190f964f5b8a583d6",
+  "model_uri":"runs:\/f5d148b01686432190f964f5b8a583d6\/model",
+  "best_model":"random_forest",
+  "cv_scores":{
+    "logistic_regression":0.8981779895,
+    "random_forest":0.9015404885,
+    "xgboost":0.8856770042,
+    "svm":0.8899947074
+  },
+  "metrics":{
+    "accuracy":0.8524590164,
+    "precision":0.8064516129,
+    "recall":0.8928571429,
+    "f1":0.8474576271,
+    "roc_auc":0.9502164502
+  },
+  "model_path":"\/Users\/anshulmandrelia\/Desktop\/Bits Wilp\/model\/heart_disease_pipeline.joblib"
+}

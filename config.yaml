@@ -1,0 +1,17 @@
+project:
+  name: heart-disease-mlops
+  random_state: 42
+  test_size: 0.20
+data:
+  raw_path: data/heart_disease.csv
+  target: target
+training:
+  cv_folds: 5
+  scoring: roc_auc
+  experiment_name: heart-disease-prediction
+  tracking_uri: sqlite:///mlflow.db
+  model_path: model/heart_disease_pipeline.joblib
+api:
+  model_path: model/heart_disease_pipeline.joblib
+  log_level: INFO
+
