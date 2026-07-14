@@ -54,3 +54,87 @@ jobs:
             docker-health.json
             docker-predict.json
           if-no-files-found: error
+      - name: Create local Kubernetes cluster
+        uses: helm/kind-action@v1.12.0
+        with:
+          cluster_name: heart-disease-ci
+      - name: Kubernetes deployment smoke test
+        run: |
+          docker tag heart-disease-mlops:${{ github.sha }} heart-disease-mlops:latest
+          kind load docker-image heart-disease-mlops:latest --name heart-disease-ci
+          kubectl apply -f kubernetes/
+          kubectl rollout status deployment/heart-disease-api --timeout=180s
+          kubectl get deployment,service,ingress -o wide > kubernetes-resources.txt
+          kubectl get pods -l app=heart-disease-api -o wide >> kubernetes-resources.txt
+          kubectl port-forward service/heart-disease-api 18000:80 > kubectl-port-forward.log 2>&1 &
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:18000/health > kubernetes-health.json; then
+              break
+            fi
+            sleep 2
+          done
+          test -s kubernetes-health.json
+          curl --fail --silent --show-error \
+            --request POST http://127.0.0.1:18000/predict \
+            --header 'Content-Type: application/json' \
+            --data '{"age":63,"sex":1,"cp":3,"trestbps":145,"chol":233,"fbs":1,"restecg":0,"thalach":150,"exang":0,"oldpeak":2.3,"slope":0,"ca":0,"thal":1}' \
+            > kubernetes-predict.json
+          cat kubernetes-resources.txt
+          cat kubernetes-health.json
+          cat kubernetes-predict.json
+      - name: Upload Kubernetes deployment evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: kubernetes-deployment-evidence
+          path: |
+            kubernetes-resources.txt
+            kubernetes-health.json
+            kubernetes-predict.json
+            kubectl-port-forward.log
+          if-no-files-found: error
+      - name: Monitoring stack smoke test
+        run: |
+          docker compose -f docker/docker-compose.yml up --build --detach
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:8000/health > monitoring-api-health.json; then
+              break
+            fi
+            sleep 2
+          done
+          test -s monitoring-api-health.json
+          curl --fail --silent --show-error \
+            --request POST http://127.0.0.1:8000/predict \
+            --header 'Content-Type: application/json' \
+            --data '{"age":63,"sex":1,"cp":3,"trestbps":145,"chol":233,"fbs":1,"restecg":0,"thalach":150,"exang":0,"oldpeak":2.3,"slope":0,"ca":0,"thal":1}' > monitoring-predict.json
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:3000/api/health > grafana-health.json; then
+              break
+            fi
+            sleep 2
+          done
+          test -s grafana-health.json
+          python -c 'import json; print(json.dumps({"dashboard": json.load(open("monitoring/grafana_dashboard.json")), "overwrite": True}))' > grafana-dashboard-payload.json
+          curl --fail --silent --show-error --user admin:admin \
+            --header 'Content-Type: application/json' \
+            --request POST http://127.0.0.1:3000/api/dashboards/db \
+            --data-binary @grafana-dashboard-payload.json > grafana-dashboard-import.json
+          sleep 20
+          curl --fail --silent --show-error --get http://127.0.0.1:9090/api/v1/query \
+            --data-urlencode 'query=sum(heart_disease_prediction_requests_total)' > prometheus-query.json
+          docker compose -f docker/docker-compose.yml logs --no-color > monitoring-stack.log
+          cat grafana-health.json
+          cat grafana-dashboard-import.json
+          cat prometheus-query.json
+      - name: Upload monitoring evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: monitoring-stack-evidence
+          path: |
+            monitoring-api-health.json
+            monitoring-predict.json
+            grafana-health.json
+            grafana-dashboard-payload.json
+            grafana-dashboard-import.json
+            prometheus-query.json
+            monitoring-stack.log
+          if-no-files-found: error
