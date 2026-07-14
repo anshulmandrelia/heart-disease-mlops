@@ -17,6 +17,15 @@ jobs:
         run: pytest -q
       - name: Train model
         run: python -m src.train
+      - name: Upload training evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: training-evidence
+          path: |
+            model/heart_disease_pipeline.joblib
+            model/training_summary.json
+            screenshots/*.png
+            mlflow.db
+          if-no-files-found: error
       - name: Build Docker image
         run: docker build -t heart-disease-mlops:${{ github.sha }} .
-
